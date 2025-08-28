@@ -24,7 +24,7 @@ Route::middleware('auth')->group(function () {
 });
 Route::resource('alumnos', AlumnoController::class);
 Route::resource('equipos', EquipoController::class);
-Route::resource('serviciotecnicos', ServicioTecnicoController::class);
+Route::resource('serviciotecnico', ServicioTecnicoController::class);
 
     Route::get('/alumnos/buscar/{dni}', [AlumnoController::class, 'buscarPorDni'])->name('alumnos.buscarPorDni');
 

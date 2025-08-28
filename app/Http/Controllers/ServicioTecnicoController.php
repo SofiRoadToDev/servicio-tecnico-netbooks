@@ -28,10 +28,7 @@ class ServicioTecnicoController extends Controller
      */
     public function create()
     {
-        return Inertia::render('ServicioTecnico/Create', [
-            'alumnos' => Alumno::all(),
-            'equipos' => Equipo::all()
-        ]);
+        return Inertia::render('ServicioTecnico/Create');
     }
 
     /**
@@ -74,3 +71,4 @@ class ServicioTecnicoController extends Controller
         //
     }
 }
+
