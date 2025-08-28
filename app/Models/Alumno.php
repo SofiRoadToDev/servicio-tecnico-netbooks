@@ -17,4 +17,9 @@ class Alumno extends Model
     {
         return $this->hasMany(ServicioTecnico::class);
     }
+    
+    public function equipos(): HasMany
+    {
+        return $this->hasMany(Equipo::class);
+    }
 }

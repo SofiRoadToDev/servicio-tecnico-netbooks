@@ -1,11 +1,11 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { Head, useForm } from '@inertiajs/react';
 import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput'; // Added TextInput
+import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputError from '@/Components/InputError';
-import { useState } from 'react'; // Added useState
-import axios from 'axios'; // Added axios
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function ServicioTecnicoCreate() {
     const { data, setData, post, processing, errors } = useForm({
@@ -14,12 +14,32 @@ function ServicioTecnicoCreate() {
         equipo_id: '',
         motivo: '',
         estado: 'ticket_generado', // Default value
-        alumno_dni: '', // New field for DNI input
-        alumno_nombre_apellido: '', // New field for display
-        equipo_num_serie: '', // New field for display
+        alumno_dni: '', // Field for DNI input
+        alumno_nombre_apellido: '', // Field for display
+        equipo_num_serie: '', // Field for display
     });
 
     const [searchError, setSearchError] = useState(''); // State for search errors
+    const [dniTimeout, setDniTimeout] = useState(null); // Timeout for DNI search
+
+    // Efecto para buscar alumno cuando cambia el DNI
+    useEffect(() => {
+        if (data.alumno_dni && data.alumno_dni.length >= 7) {
+            // Limpiar timeout anterior si existe
+            if (dniTimeout) clearTimeout(dniTimeout);
+            
+            // Crear nuevo timeout para evitar múltiples búsquedas mientras se escribe
+            const timeout = setTimeout(() => {
+                handleSearch();
+            }, 500);
+            
+            setDniTimeout(timeout);
+        }
+        
+        return () => {
+            if (dniTimeout) clearTimeout(dniTimeout);
+        };
+    }, [data.alumno_dni]);
 
     const handleSearch = async () => {
         setSearchError(''); // Clear previous errors
@@ -79,23 +99,21 @@ function ServicioTecnicoCreate() {
                         <InputError message={errors.fecha} className="mt-2" />
                     </div>
 
-                    {/* Alumno DNI Input and Search Button */}
-                    <div className="flex items-end gap-2">
-                        <div className="flex-grow">
-                            <InputLabel htmlFor="alumno_dni" value="DNI del Alumno" />
-                            <TextInput
-                                id="alumno_dni"
-                                name="alumno_dni"
-                                value={data.alumno_dni}
-                                className="mt-1 block w-full"
-                                onChange={(e) => setData('alumno_dni', e.target.value)}
-                                required
-                            />
-                            <InputError message={errors.alumno_dni || searchError} className="mt-2" />
+                    {/* Alumno DNI Input */}
+                    <div>
+                        <InputLabel htmlFor="alumno_dni" value="DNI del Alumno" />
+                        <TextInput
+                            id="alumno_dni"
+                            name="alumno_dni"
+                            value={data.alumno_dni}
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('alumno_dni', e.target.value)}
+                            required
+                        />
+                        <InputError message={errors.alumno_dni || searchError} className="mt-2" />
+                        <div className="text-xs text-gray-500 mt-1">
+                            Ingrese el DNI completo para buscar automáticamente
                         </div>
-                        <PrimaryButton type="button" onClick={handleSearch} className="mb-1">
-                            Buscar
-                        </PrimaryButton>
                     </div>
 
                     {/* Alumno Nombre y Apellido Display */}
