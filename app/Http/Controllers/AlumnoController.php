@@ -75,4 +75,15 @@ class AlumnoController extends Controller
     {
         //
     }
+
+    public function buscarPorDni($dni)
+    {
+        $alumno = Alumno::where('dni', $dni)->with('equipos')->first();
+
+        if (!$alumno) {
+            return response()->json(['message' => 'Alumno no encontrado'], 404);
+        }
+
+        return response()->json($alumno);
+    }
 }

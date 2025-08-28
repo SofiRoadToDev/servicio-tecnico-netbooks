@@ -1,22 +1,61 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { Head, useForm } from '@inertiajs/react';
 import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput'; // Added TextInput
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputError from '@/Components/InputError';
+import { useState } from 'react'; // Added useState
+import axios from 'axios'; // Added axios
 
-// Note: We are receiving alumnos and equipos as props from the controller
-function ServicioTecnicoCreate({ alumnos, equipos }) {
+function ServicioTecnicoCreate() {
     const { data, setData, post, processing, errors } = useForm({
         fecha: '',
         alumno_id: '',
         equipo_id: '',
         motivo: '',
         estado: 'ticket_generado', // Default value
+        alumno_dni: '', // New field for DNI input
+        alumno_nombre_apellido: '', // New field for display
+        equipo_num_serie: '', // New field for display
     });
+
+    const [searchError, setSearchError] = useState(''); // State for search errors
+
+    const handleSearch = async () => {
+        setSearchError(''); // Clear previous errors
+        if (!data.alumno_dni) {
+            setSearchError('Por favor, ingrese el DNI del alumno.');
+            return;
+        }
+
+        try {
+            const response = await axios.get(route('alumnos.buscarPorDni', data.alumno_dni));
+            const alumno = response.data;
+
+            setData((prevData) => ({
+                ...prevData,
+                alumno_id: alumno.id,
+                alumno_nombre_apellido: `${alumno.apellido}, ${alumno.nombre}`,
+                equipo_id: alumno.equipos.length > 0 ? alumno.equipos[0].id : '', // Assuming one equipment for now
+                equipo_num_serie: alumno.equipos.length > 0 ? alumno.equipos[0].num_serie : '',
+            }));
+            setSearchError('');
+        } catch (error) {
+            console.error('Error searching alumno:', error);
+            setSearchError('Alumno no encontrado o sin equipo asociado.');
+            setData((prevData) => ({
+                ...prevData,
+                alumno_id: '',
+                alumno_nombre_apellido: '',
+                equipo_id: '',
+                equipo_num_serie: '',
+            }));
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('serviciotecnicos.store'));
+        post(route('serviciotecnico.store'));
     };
 
     return (
@@ -40,47 +79,55 @@ function ServicioTecnicoCreate({ alumnos, equipos }) {
                         <InputError message={errors.fecha} className="mt-2" />
                     </div>
 
-                    {/* Alumno Select */}
-                    <div>
-                        <InputLabel htmlFor="alumno_id" value="Alumno" />
-                        <select
-                            id="alumno_id"
-                            name="alumno_id"
-                            value={data.alumno_id}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            onChange={(e) => setData('alumno_id', e.target.value)}
-                            required
-                        >
-                            <option value="">Seleccione un Alumno</option>
-                            {alumnos.map((alumno) => (
-                                <option key={alumno.id} value={alumno.id}>
-                                    {alumno.apellido}, {alumno.nombre} (DNI: {alumno.dni})
-                                </option>
-                            ))}
-                        </select>
-                        <InputError message={errors.alumno_id} className="mt-2" />
+                    {/* Alumno DNI Input and Search Button */}
+                    <div className="flex items-end gap-2">
+                        <div className="flex-grow">
+                            <InputLabel htmlFor="alumno_dni" value="DNI del Alumno" />
+                            <TextInput
+                                id="alumno_dni"
+                                name="alumno_dni"
+                                value={data.alumno_dni}
+                                className="mt-1 block w-full"
+                                onChange={(e) => setData('alumno_dni', e.target.value)}
+                                required
+                            />
+                            <InputError message={errors.alumno_dni || searchError} className="mt-2" />
+                        </div>
+                        <PrimaryButton type="button" onClick={handleSearch} className="mb-1">
+                            Buscar
+                        </PrimaryButton>
                     </div>
 
-                    {/* Equipo Select */}
+                    {/* Alumno Nombre y Apellido Display */}
                     <div>
-                        <InputLabel htmlFor="equipo_id" value="Equipo" />
-                        <select
-                            id="equipo_id"
-                            name="equipo_id"
-                            value={data.equipo_id}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            onChange={(e) => setData('equipo_id', e.target.value)}
-                            required
-                        >
-                            <option value="">Seleccione un Equipo</option>
-                            {equipos.map((equipo) => (
-                                <option key={equipo.id} value={equipo.id}>
-                                    {equipo.marca} {equipo.modelo} (S/N: {equipo.num_serie})
-                                </option>
-                            ))}
-                        </select>
-                        <InputError message={errors.equipo_id} className="mt-2" />
+                        <InputLabel htmlFor="alumno_nombre_apellido" value="Alumno" />
+                        <TextInput
+                            id="alumno_nombre_apellido"
+                            name="alumno_nombre_apellido"
+                            value={data.alumno_nombre_apellido}
+                            className="mt-1 block w-full"
+                            readOnly
+                            disabled
+                        />
                     </div>
+
+                    {/* Equipo Número de Serie Display */}
+                    <div>
+                        <InputLabel htmlFor="equipo_num_serie" value="Número de Serie del Equipo" />
+                        <TextInput
+                            id="equipo_num_serie"
+                            name="equipo_num_serie"
+                            value={data.equipo_num_serie}
+                            className="mt-1 block w-full"
+                            readOnly
+                            disabled
+                        />
+                        <InputError message={errors.equipo_id} className="mt-2" /> {/* Error for hidden equipo_id */}
+                    </div>
+
+                    {/* Hidden Inputs for actual IDs */}
+                    <input type="hidden" name="alumno_id" value={data.alumno_id} />
+                    <input type="hidden" name="equipo_id" value={data.equipo_id} />
 
                     {/* Motivo Textarea */}
                     <div>
@@ -116,7 +163,7 @@ function ServicioTecnicoCreate({ alumnos, equipos }) {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <PrimaryButton disabled={processing}>Guardar</PrimaryButton>
+                        <PrimaryButton disabled={processing || !data.alumno_id || !data.equipo_id}>Guardar</PrimaryButton>
                     </div>
                 </form>
             </div>
