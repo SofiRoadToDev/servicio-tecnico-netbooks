@@ -15,7 +15,7 @@ class AlumnoController extends Controller
     public function index()
     {
         return Inertia::render('Alumnos/Index', [
-            'alumnos' => Alumno::all(),
+            'alumnos' => Alumno::orderBy('apellido')->paginate(10),
         ]);
     }
 

@@ -16,7 +16,7 @@ class EquipoController extends Controller
     public function index()
     {
         return Inertia::render('Equipos/Index', [
-            'equipos' => Equipo::all(),
+            'equipos' => Equipo::orderBy('marca')->paginate(10),
         ]);
     }
 

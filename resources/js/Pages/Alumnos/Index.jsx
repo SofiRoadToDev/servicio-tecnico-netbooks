@@ -1,7 +1,14 @@
 import AppLayout from '../../Layouts/AppLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 
 function AlumnoIndex({ alumnos }) {
+    const handlePageChange = (page) => {
+        router.get(route('alumnos.index'), { page }, {
+            preserveState: true,
+            replace: true
+        });
+    };
+
     return (
         <>
             <Head title="Alumnos" />
@@ -28,21 +35,57 @@ function AlumnoIndex({ alumnos }) {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {alumnos.map((alumno) => (
-                                <tr key={alumno.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {alumno.nombre}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {alumno.apellido}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {alumno.dni}
+                            {alumnos.data.length > 0 ? (
+                                alumnos.data.map((alumno) => (
+                                    <tr key={alumno.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {alumno.nombre}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {alumno.apellido}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {alumno.dni}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="3" className="px-6 py-4 text-center text-gray-500">
+                                        No se encontraron registros
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
+                    
+                    {/* Paginación */}
+                    {alumnos.last_page > 1 && (
+                        <div className="px-6 py-4 bg-white border-t border-gray-200">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    Mostrando {alumnos.from} a {alumnos.to} de {alumnos.total} registros
+                                </div>
+                                <div className="flex space-x-2">
+                                    {alumnos.links.map((link, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => link.url && handlePageChange(link.url.split('?page=')[1])}
+                                            disabled={!link.url}
+                                            className={`px-4 py-2 border rounded ${
+                                                link.active 
+                                                    ? 'bg-gray-800 text-white' 
+                                                    : link.url 
+                                                        ? 'bg-white text-gray-800 hover:bg-gray-100' 
+                                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            }`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </>

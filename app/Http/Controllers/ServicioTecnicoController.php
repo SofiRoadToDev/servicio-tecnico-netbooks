@@ -14,12 +14,25 @@ class ServicioTecnicoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-        $serviciosTecnicos = ServicioTecnico::with(['alumno', 'equipo'])->get();
+        $query = ServicioTecnico::with(['alumno', 'equipo'])->orderBy('fecha', 'desc');
+        
+        // Filtrar por DNI de alumno si se proporciona
+        if ($request->has('dni') && $request->dni) {
+            $dni = $request->dni;
+            $query->whereHas('alumno', function($q) use ($dni) {
+                $q->where('dni', 'like', $dni . '%');
+            });
+        }
+        
+        $serviciosTecnicos = $query->paginate(10);
+        
         return Inertia::render('ServicioTecnico/Index', [
-            'serviciosTecnicos' => $serviciosTecnicos
+            'serviciosTecnicos' => $serviciosTecnicos,
+            'filters' => [
+                'dni' => $request->dni ?? ''
+            ]
         ]);
     }
 

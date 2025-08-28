@@ -1,18 +1,48 @@
 import AppLayout from '../../Layouts/AppLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import SearchBox from '@/Components/SearchBox';
 
-// The controller will need to pass 'servicios' with 'alumno' and 'equipo' data eager loaded.
-function ServicioTecnicoIndex({ servicios = [] }) {
+function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }) {
+    const handleSearch = (dni) => {
+        router.get(route('serviciotecnico.index'), { dni }, {
+            preserveState: true,
+            replace: true
+        });
+    };
+    
+    const handlePageChange = (page) => {
+        router.get(route('serviciotecnico.index'), { 
+            page: page,
+            dni: filters.dni 
+        }, {
+            preserveState: true,
+            replace: true
+        });
+    };
+
     return (
         <>
             <Head title="Servicios Técnicos" />
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold">Lista de Servicios Técnicos</h1>
-                    <Link href={route('serviciotecnico.create')} className="px-4 py-2 bg-gray-800 text-white rounded-md">
-                        Crear Servicio
-                    </Link>
+                 <h1 className="text-2xl font-bold">Lista de Servicios Técnicos</h1>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex justify-between items-center">               
+                        <Link href={route('serviciotecnico.create')} className="px-4 py-2 bg-gray-800 text-white rounded-md">
+                            Crear Servicio
+                        </Link>
+                    </div>
+                
+                {/* Componente SearchBox para filtrar por DNI */}
+                    <div className="mt-4 c">
+                        <SearchBox 
+                            onSearch={handleSearch} 
+                            placeholder="Ingrese DNI del alumno" 
+                            label="Filtrar por DNI"
+                        />
+                    </div>
                 </div>
+                
+                
                 <div className="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -32,24 +62,60 @@ function ServicioTecnicoIndex({ servicios = [] }) {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {servicios.map((servicio) => (
-                                <tr key={servicio.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {new Date(servicio.fecha).toLocaleString()}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {servicio.alumno ? `${servicio.alumno.apellido}, ${servicio.alumno.nombre}` : 'N/A'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {servicio.equipo ? `${servicio.equipo.marca} ${servicio.equipo.modelo}` : 'N/A'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {servicio.estado}
+                            {serviciosTecnicos.data.length > 0 ? (
+                                serviciosTecnicos.data.map((servicio) => (
+                                    <tr key={servicio.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {new Date(servicio.fecha).toLocaleString()}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {servicio.alumno ? `${servicio.alumno.apellido}, ${servicio.alumno.nombre} (DNI: ${servicio.alumno.dni})` : 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {servicio.equipo ? `${servicio.equipo.marca} ${servicio.equipo.modelo}` : 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {servicio.estado}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
+                                        No se encontraron registros
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
+                    
+                    {/* Paginación */}
+                    {serviciosTecnicos.last_page > 1 && (
+                        <div className="px-6 py-4 bg-white border-t border-gray-200">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    Mostrando {serviciosTecnicos.from} a {serviciosTecnicos.to} de {serviciosTecnicos.total} registros
+                                </div>
+                                <div className="flex space-x-2">
+                                    {serviciosTecnicos.links.map((link, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => link.url && handlePageChange(link.url.split('?page=')[1])}
+                                            disabled={!link.url}
+                                            className={`px-4 py-2 border rounded ${
+                                                link.active 
+                                                    ? 'bg-gray-800 text-white' 
+                                                    : link.url 
+                                                        ? 'bg-white text-gray-800 hover:bg-gray-100' 
+                                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            }`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </>
