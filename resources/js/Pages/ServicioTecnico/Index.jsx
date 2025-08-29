@@ -2,6 +2,7 @@ import AppLayout from '../../Layouts/AppLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import SearchBox from '@/Components/SearchBox';
 import StateFilter from '@/Components/StateFilter';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }) {
     const handleSearch = (dni) => {
@@ -12,6 +13,12 @@ function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }
             preserveState: true,
             replace: true
         });
+    };
+    
+    const handleDelete = (id) => {
+        if (confirm('¿Está seguro que desea eliminar este servicio técnico?')) {
+            router.delete(route('serviciotecnico.destroy', id));
+        }
     };
 
     const handleStateChange = (estado) => {
@@ -73,6 +80,9 @@ function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }
                                     Fecha
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Número de Ticket
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Alumno
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -80,6 +90,9 @@ function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Estado
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Acciones
                                 </th>
                             </tr>
                         </thead>
@@ -91,6 +104,9 @@ function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }
                                             {new Date(servicio.fecha).toLocaleString()}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
+                                            {servicio.numero_ticket || 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
                                             {servicio.alumno ? `${servicio.alumno.apellido}, ${servicio.alumno.nombre} (DNI: ${servicio.alumno.dni})` : 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -99,11 +115,24 @@ function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {servicio.estado}
                                         </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div className="flex space-x-2">
+                                                <Link href={route('serviciotecnico.edit', servicio.id)} className="text-indigo-600 hover:text-indigo-900">
+                                                    <FaEdit className="h-5 w-5" />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(servicio.id)}
+                                                    className="text-red-600 hover:text-red-900"
+                                                >
+                                                    <FaTrash className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
+                                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
                                         No se encontraron registros
                                     </td>
                                 </tr>

@@ -34,10 +34,11 @@ class EquipoController extends Controller
     public function store(Request $request)
     {
          $validated = $request->validate([
-        'num_serie' => 'required|string|max:100',
-        'marca' => 'required|string|max:30',
-        'modelo' => 'required|string|max:30',
-        'caracteristicas' => 'required|string',
+            'num_serie' => 'required|string|max:100',
+            'marca' => 'required|string|max:30',
+            'modelo' => 'required|string|max:30',
+            'caracteristicas' => 'required|string',
+            'alumno_id' => 'required|exists:alumnos,id',
         ]);
     
        \App\Models\Equipo::create($validated);
@@ -58,7 +59,9 @@ class EquipoController extends Controller
      */
     public function edit(Equipo $equipo)
     {
-        //
+        return Inertia::render('Equipos/Create', [
+            'equipo' => $equipo->load('alumno'),
+        ]);
     }
 
     /**
@@ -66,7 +69,17 @@ class EquipoController extends Controller
      */
     public function update(Request $request, Equipo $equipo)
     {
-        //
+        $validated = $request->validate([
+            'num_serie' => 'required|string|max:100',
+            'marca' => 'required|string|max:30',
+            'modelo' => 'required|string|max:30',
+            'caracteristicas' => 'required|string',
+            'alumno_id' => 'required|exists:alumnos,id',
+        ]);
+        
+        $equipo->update($validated);
+        
+        return redirect()->route('equipos.index');
     }
 
     /**
@@ -74,7 +87,8 @@ class EquipoController extends Controller
      */
     public function destroy(Equipo $equipo)
     {
-        //
+        $equipo->delete();
+        return redirect()->route('equipos.index');
     }
 }
 

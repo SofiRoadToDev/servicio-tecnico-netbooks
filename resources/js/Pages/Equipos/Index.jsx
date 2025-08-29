@@ -1,5 +1,6 @@
-import AppLayout from '../../Layouts/AppLayout';
+import AppLayout from '@/Layouts/AppLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 function EquipoIndex({ equipos }) {
     const handlePageChange = (page) => {
@@ -7,6 +8,12 @@ function EquipoIndex({ equipos }) {
             preserveState: true,
             replace: true
         });
+    };
+    
+    const handleDelete = (id) => {
+        if (confirm('¿Estás seguro de que deseas eliminar este equipo?')) {
+            router.delete(route('equipos.destroy', id));
+        }
     };
 
     return (
@@ -35,6 +42,9 @@ function EquipoIndex({ equipos }) {
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Características
                                 </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Acciones
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -53,11 +63,24 @@ function EquipoIndex({ equipos }) {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {equipo.caracteristicas}
                                         </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div className="flex space-x-2">
+                                                <Link href={route('equipos.edit', equipo.id)} className="text-indigo-600 hover:text-indigo-900">
+                                                    <FaEdit className="h-5 w-5" />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(equipo.id)}
+                                                    className="text-red-600 hover:text-red-900"
+                                                >
+                                                    <FaTrash className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
+                                    <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
                                         No se encontraron registros
                                     </td>
                                 </tr>

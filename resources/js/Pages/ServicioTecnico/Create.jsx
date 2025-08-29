@@ -1,22 +1,24 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link, router } from '@inertiajs/react';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
+import SecondaryButton from '@/Components/SecondaryButton';
 import InputError from '@/Components/InputError';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function ServicioTecnicoCreate() {
-    const { data, setData, post, processing, errors } = useForm({
-        fecha: '',
-        alumno_id: '',
-        equipo_id: '',
-        motivo: '',
-        estado: 'ticket_generado', // Default value
-        alumno_dni: '', // Field for DNI input
-        alumno_nombre_apellido: '', // Field for display
-        equipo_num_serie: '', // Field for display
+function ServicioTecnicoCreate({ servicio = null }) {
+    const { data, setData, post, put, processing, errors } = useForm({
+        fecha: servicio ? servicio.fecha : '',
+        alumno_id: servicio ? servicio.alumno_id : '',
+        equipo_id: servicio ? servicio.equipo_id : '',
+        motivo: servicio ? servicio.motivo : '',
+        estado: servicio ? servicio.estado : 'ticket_generado',
+        numero_ticket: servicio ? servicio.numero_ticket : '',
+        alumno_dni: servicio ? servicio.alumno.dni : '', // Field for DNI input
+        alumno_nombre_apellido: servicio ? `${servicio.alumno.apellido}, ${servicio.alumno.nombre}` : '', // Field for display
+        equipo_num_serie: servicio ? servicio.equipo.num_serie : '', // Field for display
     });
 
     const [searchError, setSearchError] = useState(''); // State for search errors
@@ -75,14 +77,20 @@ function ServicioTecnicoCreate() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('serviciotecnico.store'));
+        if (servicio) {
+            put(route('serviciotecnico.update', servicio.id));
+        } else {
+            post(route('serviciotecnico.store'));
+        }
     };
 
     return (
         <>
-            <Head title="Crear Servicio Técnico" />
+            <Head title={servicio ? "Editar Servicio Técnico" : "Crear Servicio Técnico"} />
             <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
-                <h2 className="text-lg font-medium text-gray-900">Crear Nuevo Servicio Técnico</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                    {servicio ? "Editar Servicio Técnico" : "Crear Nuevo Servicio Técnico"}
+                </h2>
                 <form onSubmit={handleSubmit} className="mt-6 space-y-6">
                     {/* Fecha Input */}
                     <div>
@@ -98,10 +106,50 @@ function ServicioTecnicoCreate() {
                         />
                         <InputError message={errors.fecha} className="mt-2" />
                     </div>
+                    
+                    {/* Número de Ticket Input */}
+                    <div>
+                        <InputLabel htmlFor="numero_ticket" value="Número de Ticket" />
+                        <div className="flex items-center mt-1">
+                            <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">
+                                SCI-
+                            </span>
+                            <TextInput
+                                id="numero_ticket"
+                                type="text"
+                                name="numero_ticket"
+                                value={(data.numero_ticket || '').replace('SCI-', '')}
+                                className="rounded-none rounded-r-md block w-full"
+                                onChange={(e) => {
+                                    // Validar que solo se ingresen números
+                                    const value = e.target.value.replace(/\D/g, '');
+                                    // Limitar a 8 dígitos
+                                    const limitedValue = value.slice(0, 8);
+                                    setData('numero_ticket', 'SCI-' + limitedValue);
+                                }}
+                                placeholder="00000000"
+                                maxLength={8}
+                            />
+                        </div>
+                        <p className="mt-1 text-sm text-gray-500">Ingrese solo los 8 dígitos numéricos</p>
+                        <InputError message={errors.numero_ticket} className="mt-2" />
+                    </div>
 
                     {/* Alumno DNI Input */}
                     <div>
-                        <InputLabel htmlFor="alumno_dni" value="DNI del Alumno" />
+                        <div className="flex justify-between items-center">
+                            <InputLabel htmlFor="alumno_dni" value="DNI del Alumno" />
+                            <Link 
+                                href={route('alumnos.create')} 
+                                className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                                target="_blank"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                Crear nuevo alumno
+                            </Link>
+                        </div>
                         <TextInput
                             id="alumno_dni"
                             name="alumno_dni"
@@ -181,7 +229,9 @@ function ServicioTecnicoCreate() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <PrimaryButton disabled={processing || !data.alumno_id || !data.equipo_id}>Guardar</PrimaryButton>
+                        <PrimaryButton disabled={processing || !data.alumno_id || !data.equipo_id}>
+                            {servicio ? "Actualizar" : "Guardar"}
+                        </PrimaryButton>
                     </div>
                 </form>
             </div>

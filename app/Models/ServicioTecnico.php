@@ -11,6 +11,7 @@ class ServicioTecnico extends Model
         'fecha',
         'alumno_id',
         'equipo_id',
+        'numero_ticket',
         'motivo',
         'estado',
     ];

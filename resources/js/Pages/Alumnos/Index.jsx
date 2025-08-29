@@ -1,5 +1,6 @@
 import AppLayout from '../../Layouts/AppLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 function AlumnoIndex({ alumnos }) {
     const handlePageChange = (page) => {
@@ -7,6 +8,12 @@ function AlumnoIndex({ alumnos }) {
             preserveState: true,
             replace: true
         });
+    };
+    
+    const handleDelete = (id) => {
+        if (confirm('¿Está seguro que desea eliminar este alumno?')) {
+            router.delete(route('alumnos.destroy', id));
+        }
     };
 
     return (
@@ -32,6 +39,9 @@ function AlumnoIndex({ alumnos }) {
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     DNI
                                 </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Acciones
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -47,11 +57,24 @@ function AlumnoIndex({ alumnos }) {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {alumno.dni}
                                         </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div className="flex space-x-2">
+                                                <Link href={route('alumnos.edit', alumno.id)} className="text-indigo-600 hover:text-indigo-900">
+                                                    <FaEdit className="h-5 w-5" />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(alumno.id)}
+                                                    className="text-red-600 hover:text-red-900"
+                                                >
+                                                    <FaTrash className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="3" className="px-6 py-4 text-center text-gray-500">
+                                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
                                         No se encontraron registros
                                     </td>
                                 </tr>

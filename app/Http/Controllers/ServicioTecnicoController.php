@@ -60,7 +60,18 @@ class ServicioTecnicoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'fecha' => 'required|date',
+            'alumno_id' => 'required|exists:alumnos,id',
+            'equipo_id' => 'required|exists:equipos,id',
+            'numero_ticket' => 'nullable|string|max:50',
+            'motivo' => 'required|string',
+            'estado' => 'required|string|in:ticket_generado,retirado_por_correo,devuelto_reparado,devuelto_sin_reparar',
+        ]);
+
+        ServicioTecnico::create($validated);
+
+        return redirect()->route('serviciotecnico.index');
     }
 
     /**

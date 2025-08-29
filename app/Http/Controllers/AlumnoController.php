@@ -39,7 +39,25 @@ class AlumnoController extends Controller
             'dni' => 'required|string|max:8',
         ]);
 
-        Alumno::create($validated);
+        $alumno = Alumno::create($validated);
+
+        // Si se enviaron datos de equipo, crear el equipo asociado
+        if ($request->has('equipo_num_serie') && $request->equipo_num_serie) {
+            $equipoData = $request->validate([
+                'equipo_num_serie' => 'required|string|max:50',
+                'equipo_marca' => 'required|string|max:30',
+                'equipo_modelo' => 'required|string|max:30',
+                'equipo_caracteristicas' => 'required|string',
+            ]);
+
+            $alumno->equipos()->create([
+                'num_serie' => $equipoData['equipo_num_serie'],
+                'marca' => $equipoData['equipo_marca'],
+                'modelo' => $equipoData['equipo_modelo'],
+                'caracteristicas' => $equipoData['equipo_caracteristicas'],
+                'alumno_id' => $alumno->id,
+            ]);
+        }
 
         return redirect()->route('alumnos.index');
     }
@@ -57,7 +75,9 @@ class AlumnoController extends Controller
      */
     public function edit(Alumno $alumno)
     {
-        //
+        return Inertia::render('Alumnos/Create', [
+            'alumno' =>$alumno->load('equipos'),
+        ]);
     }
 
     /**
