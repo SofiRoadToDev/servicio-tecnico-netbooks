@@ -12,9 +12,8 @@ class AdminUserSeeder extends Seeder
     {
         User::create([
             'name' => 'Administrador',
-            'email' => 'admin@servicio-tecnico.local',
+            'username' => 'admin',
             'password' => Hash::make('admin123'),
-            'email_verified_at' => now(),
         ]);
     }
 }

@@ -10,8 +10,8 @@ use App\Http\Controllers\EquipoController;
 
 
 Route::get('/', function () {
-    return Inertia::render('Home');
-})->name('home');
+    return redirect()->route('serviciotecnico.index');
+})->middleware('auth')->name('home');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

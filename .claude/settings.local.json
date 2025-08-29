@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan make:migration:*)",
+      "Bash(/opt/lampp/bin/php artisan make:migration modify_users_table_add_username)",
+      "Bash(/opt/lampp/bin/php:*)",
+      "Bash(/mnt/c/xampp/php/php.exe:*)",
+      "Bash(php artisan migrate:*)",
+      "Bash(docker:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
