@@ -1,10 +1,24 @@
 import AppLayout from '../../Layouts/AppLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import SearchBox from '@/Components/SearchBox';
+import StateFilter from '@/Components/StateFilter';
 
 function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }) {
     const handleSearch = (dni) => {
-        router.get(route('serviciotecnico.index'), { dni }, {
+        router.get(route('serviciotecnico.index'), { 
+            dni, 
+            estado: filters.estado 
+        }, {
+            preserveState: true,
+            replace: true
+        });
+    };
+
+    const handleStateChange = (estado) => {
+        router.get(route('serviciotecnico.index'), { 
+            dni: filters.dni,
+            estado 
+        }, {
             preserveState: true,
             replace: true
         });
@@ -13,7 +27,8 @@ function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }
     const handlePageChange = (page) => {
         router.get(route('serviciotecnico.index'), { 
             page: page,
-            dni: filters.dni 
+            dni: filters.dni,
+            estado: filters.estado 
         }, {
             preserveState: true,
             replace: true
@@ -32,13 +47,20 @@ function ServicioTecnicoIndex({ serviciosTecnicos = { data: [] }, filters = {} }
                         </Link>
                     </div>
                 
-                {/* Componente SearchBox para filtrar por DNI */}
-                    <div className="mt-4 c">
+                {/* Componentes de filtrado */}
+                    <div className="mt-4 space-y-4">
                         <SearchBox 
                             onSearch={handleSearch} 
                             placeholder="Ingrese DNI del alumno" 
                             label="Filtrar por DNI"
                         />
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por Estado:</label>
+                            <StateFilter 
+                                selectedState={filters.estado}
+                                onStateChange={handleStateChange}
+                            />
+                        </div>
                     </div>
                 </div>
                 

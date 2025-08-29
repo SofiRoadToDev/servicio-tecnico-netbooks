@@ -26,12 +26,23 @@ class ServicioTecnicoController extends Controller
             });
         }
         
+        // Filtrar por estado si se proporciona
+        if ($request->has('estado') && $request->estado) {
+            $estado = $request->estado;
+            $estadosValidos = ['ticket_generado', 'retirado_por_correo', 'devuelto_reparado', 'devuelto_sin_reparar'];
+            
+            if (in_array($estado, $estadosValidos)) {
+                $query->where('estado', $estado);
+            }
+        }
+        
         $serviciosTecnicos = $query->paginate(10);
         
         return Inertia::render('ServicioTecnico/Index', [
             'serviciosTecnicos' => $serviciosTecnicos,
             'filters' => [
-                'dni' => $request->dni ?? ''
+                'dni' => $request->dni ?? '',
+                'estado' => $request->estado ?? ''
             ]
         ]);
     }
